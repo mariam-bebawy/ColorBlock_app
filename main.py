@@ -22,7 +22,7 @@ from core.color_engine import (
     check_brightness, segment_clothing, get_dominant_color,
     rgb_to_hex, load_colors_csv,
 )
-from core.color_harmony import HARMONY_FUNCTIONS, create_range, check_color_range
+from core.color_harmony import HARMONY_FUNCTIONS, is_hue_match
 
 
 class ColorBlockScreen(BoxLayout):
@@ -149,8 +149,7 @@ class ColorBlockScreen(BoxLayout):
             return
         for harmony_fn in HARMONY_FUNCTIONS:
             for candidate in harmony_fn(self._clr1):
-                r_rng, g_rng, b_rng = create_range(candidate, margin=10)
-                if check_color_range(self._clr2, r_rng, g_rng, b_rng):
+                if is_hue_match(self._clr2, candidate):
                     self.match_text = "IT'S A MATCH! :D"
                     return
         self.match_text = "NOT A MATCH :("

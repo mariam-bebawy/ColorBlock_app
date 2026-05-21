@@ -46,19 +46,16 @@ def tetradic(val):
 HARMONY_FUNCTIONS = [complementary, split_complementary, analogous, triadic, tetradic]
 
 
-def create_range(clr, margin=10):
-    r, g, b = int(clr[0]), int(clr[1]), int(clr[2])
-    return (
-        set(range(r - margin, r + margin)),
-        set(range(g - margin, g + margin)),
-        set(range(b - margin, b + margin)),
-    )
+def _hue_deg(rgb):
+    h, _, _ = colorsys.rgb_to_hls(rgb[0] / 255, rgb[1] / 255, rgb[2] / 255)
+    return h * 360
 
 
-def check_color_range(clr, r_range, g_range, b_range):
-    """Returns True if clr falls within all of the given RGB ranges."""
-    return (
-        int(clr[0]) in r_range and
-        int(clr[1]) in g_range and
-        int(clr[2]) in b_range
-    )
+def _hue_dist(a, b):
+    d = abs(a - b) % 360
+    return min(d, 360 - d)
+
+
+def is_hue_match(clr, candidate, tol=20):
+    """Returns True if clr's hue is within tol degrees of candidate's hue."""
+    return _hue_dist(_hue_deg(clr), _hue_deg(candidate)) <= tol
