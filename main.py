@@ -28,6 +28,8 @@ from core.color_harmony import HARMONY_FUNCTIONS, create_range, check_color_rang
 class ColorBlockScreen(BoxLayout):
     swatch1_rgba = ListProperty([0.882, 0.882, 0.882, 1])
     swatch2_rgba = ListProperty([0.882, 0.882, 0.882, 1])
+    img1_source = StringProperty("")
+    img2_source = StringProperty("")
     match_text = StringProperty("")
     btn_match_disabled = BooleanProperty(True)
 
@@ -128,10 +130,12 @@ class ColorBlockScreen(BoxLayout):
                 self._clr1 = rgb_ints
                 self.swatch1_rgba = rgba_kivy
                 self.ids.hex_label_1.text = hex_str
+                self.img1_source = path
             else:
                 self._clr2 = rgb_ints
                 self.swatch2_rgba = rgba_kivy
                 self.ids.hex_label_2.text = hex_str
+                self.img2_source = path
             self.btn_match_disabled = not (len(self._clr1) == 3 and len(self._clr2) == 3)
 
         Clock.schedule_once(update_ui)
@@ -160,6 +164,8 @@ class ColorBlockScreen(BoxLayout):
         self._clr2 = []
         self.swatch1_rgba = [0.882, 0.882, 0.882, 1]
         self.swatch2_rgba = [0.882, 0.882, 0.882, 1]
+        self.img1_source = ""
+        self.img2_source = ""
         self.match_text = ""
         self.btn_match_disabled = True
         self.ids.hex_label_1.text = ""

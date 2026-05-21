@@ -71,9 +71,18 @@
                 background_color: (0.008, 0.576, 0.545, 0.7)
                 on_press: root.open_image(1, 'camera')
 
-            ColorSwatch:
-                id: swatch1
-                swatch_rgba: root.swatch1_rgba
+            BoxLayout:
+                orientation: 'horizontal'
+                spacing: dp(4)
+
+                Image:
+                    source: root.img1_source
+                    allow_stretch: True
+                    keep_ratio: True
+
+                ColorSwatch:
+                    id: swatch1
+                    swatch_rgba: root.swatch1_rgba
 
             Label:
                 id: hex_label_1
@@ -110,9 +119,18 @@
                 background_color: (0.008, 0.576, 0.545, 0.7)
                 on_press: root.open_image(2, 'camera')
 
-            ColorSwatch:
-                id: swatch2
-                swatch_rgba: root.swatch2_rgba
+            BoxLayout:
+                orientation: 'horizontal'
+                spacing: dp(4)
+
+                Image:
+                    source: root.img2_source
+                    allow_stretch: True
+                    keep_ratio: True
+
+                ColorSwatch:
+                    id: swatch2
+                    swatch_rgba: root.swatch2_rgba
 
             Label:
                 id: hex_label_2
