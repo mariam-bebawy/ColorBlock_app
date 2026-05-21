@@ -48,8 +48,12 @@ jobs:
 
       - name: Export SDK/NDK paths so buildozer skips its own download
         run: |
-          echo "ANDROIDSDK=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
-          echo "ANDROIDNDK=$ANDROID_SDK_ROOT/ndk/25.1.8937393" >> $GITHUB_ENV
+          SDK=/usr/local/lib/android/sdk
+          echo "ANDROIDSDK=$SDK" >> $GITHUB_ENV
+          echo "ANDROIDNDK=$SDK/ndk/25.1.8937393" >> $GITHUB_ENV
+          echo "--- SDK structure ---"
+          ls "$SDK/build-tools/" || true
+          ls "$SDK/ndk/" || true
 
       - name: Cache buildozer build directory
         uses: actions/cache@v4
