@@ -31,7 +31,24 @@ jobs:
             cmake libffi-dev libssl-dev \
             build-essential ccache
 
-      - name: Cache buildozer global directory
+      - name: Set up Android SDK (cmdline-tools + licenses)
+        uses: android-actions/setup-android@v3
+
+      - name: Install required SDK components (build-tools, platform, NDK r25b)
+        run: |
+          sdkmanager --install \
+            "platform-tools" \
+            "build-tools;34.0.0" \
+            "platforms;android-33" \
+            "ndk;25.1.8937393"
+          yes | sdkmanager --licenses
+
+      - name: Export SDK/NDK paths so buildozer skips its own download
+        run: |
+          echo "ANDROIDSDK=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+          echo "ANDROIDNDK=$ANDROID_SDK_ROOT/ndk/25.1.8937393" >> $GITHUB_ENV
+
+      - name: Cache buildozer build directory
         uses: actions/cache@v4
         with:
           path: ~/.buildozer
@@ -48,18 +65,8 @@ jobs:
       - name: Install buildozer
         run: pip install buildozer cython
 
-      - name: Pre-accept Android SDK licenses
-        run: |
-          mkdir -p "$HOME/.buildozer/android/platform/android-sdk/licenses"
-          printf "\n24333f8a63b6825ea9c5514f83c2829b004d1fee\n" \
-            > "$HOME/.buildozer/android/platform/android-sdk/licenses/android-sdk-license"
-          printf "\n84831b9409646a918e30573bab4c9c91346d8abd\n" \
-            > "$HOME/.buildozer/android/platform/android-sdk/licenses/android-sdk-preview-license"
-          printf "\n601085b94cd77f0b54ff86406957099ebe79c4d6\n" \
-            > "$HOME/.buildozer/android/platform/android-sdk/licenses/android-googletv-license"
-
       - name: Build APK
-        run: yes | buildozer android debug
+        run: buildozer android debug
         env:
           JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
 
