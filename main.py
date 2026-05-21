@@ -71,7 +71,7 @@ class ColorBlockScreen(BoxLayout):
         content = BoxLayout(orientation="vertical", padding=dp(8), spacing=dp(8))
         chooser = FileChooserIconView(
             filters=["*.png", "*.jpg", "*.jpeg", "*.PNG", "*.JPG", "*.JPEG"],
-            path=os.path.expanduser("~"),
+            path=os.getcwd(),
         )
         btn = Button(
             text="Select",
