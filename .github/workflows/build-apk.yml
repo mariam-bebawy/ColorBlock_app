@@ -31,11 +31,17 @@ jobs:
             cmake libffi-dev libssl-dev \
             build-essential ccache
 
+      # Set JAVA_HOME before setup-android — the runner defaults to JDK 11
+      # but sdkmanager v16 requires JDK 17+.
       - name: Set JAVA_HOME to JDK 17
         run: echo "JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64" >> $GITHUB_ENV
 
-      # Restore cache BEFORE pre-accepting licenses so the license write
-      # always runs last and is never overwritten by a stale cache entry.
+      # Installs cmdline-tools 16.0 at /usr/local/lib/android/sdk/cmdline-tools/latest
+      - name: Set up Android SDK (cmdline-tools)
+        uses: android-actions/setup-android@v3
+
+      # Restore caches BEFORE the bootstrap step so the bootstrap always
+      # runs last and cannot be overwritten by a stale cache.
       - name: Cache buildozer global directory
         uses: actions/cache@v4
         with:
@@ -50,32 +56,53 @@ jobs:
           key: pip-${{ runner.os }}-${{ hashFiles('requirements.txt') }}
           restore-keys: pip-${{ runner.os }}-
 
-      # Must run AFTER cache restore so the cache can't overwrite these files.
-      # Buildozer 1.6.0 uses its own SDK dir (~/.buildozer/...); pre-writing
-      # the license hashes here avoids the interactive sdkmanager license prompt.
-      - name: Pre-accept Android SDK licenses
+      # Buildozer 1.6.0 ignores ANDROIDSDK/ANDROIDNDK env vars — it always
+      # uses ~/.buildozer/android/platform/{android-sdk,android-ndk-r25b}.
+      # Fix: pre-seed those directories so buildozer skips its own downloads.
+      #
+      # - Copy cmdline-tools 16.0 (modern) into buildozer's SDK dir.
+      # - Create tools/bin/sdkmanager symlink (buildozer's hardcoded path).
+      # - Pre-write license hashes so sdkmanager prompts are never shown.
+      # - Symlink the pre-installed NDK r25b so the 1 GB download is skipped.
+      - name: Bootstrap buildozer SDK/NDK directories
         run: |
-          mkdir -p "$HOME/.buildozer/android/platform/android-sdk/licenses"
-          # Standard android-sdk-license: covers all build-tools and platforms
+          SDK="$HOME/.buildozer/android/platform/android-sdk"
+          SYS_SDK="/usr/local/lib/android/sdk"
+
+          # Seed with modern cmdline-tools so sdkmanager uses the new path structure
+          mkdir -p "$SDK/cmdline-tools"
+          cp -r "$SYS_SDK/cmdline-tools/latest" "$SDK/cmdline-tools/"
+
+          # Backward-compat symlink: buildozer hardcodes tools/bin/sdkmanager
+          mkdir -p "$SDK/tools/bin"
+          ln -sf "$SDK/cmdline-tools/latest/bin/sdkmanager" "$SDK/tools/bin/sdkmanager"
+
+          # Pre-accept all Android SDK licenses (covers build-tools, platforms, etc.)
+          mkdir -p "$SDK/licenses"
           printf "8933bad161af4178b1185d1a37fbf41ea5269c55\nd56f5187479451eabf01fb78af6dfcb131a6481e\n24333f8a63b6825ea9c5514f83c2829b004d1fee\n" \
-            > "$HOME/.buildozer/android/platform/android-sdk/licenses/android-sdk-license"
+            > "$SDK/licenses/android-sdk-license"
           printf "84831b9409646a918e30573bab4c9c91346d8abd\n" \
-            > "$HOME/.buildozer/android/platform/android-sdk/licenses/android-sdk-preview-license"
+            > "$SDK/licenses/android-sdk-preview-license"
           printf "601085b94cd77f0b54ff86406957099ebe79c4d6\n" \
-            > "$HOME/.buildozer/android/platform/android-sdk/licenses/android-googletv-license"
+            > "$SDK/licenses/android-googletv-license"
+
+          # Symlink NDK r25b (pre-installed on the runner) to buildozer's expected path
+          NDK_DEST="$HOME/.buildozer/android/platform/android-ndk-r25b"
+          if [ -d "$SYS_SDK/ndk/25.1.8937393" ] && [ ! -e "$NDK_DEST" ]; then
+              ln -sf "$SYS_SDK/ndk/25.1.8937393" "$NDK_DEST"
+              echo "Symlinked NDK r25b → $SYS_SDK/ndk/25.1.8937393"
+          else
+              echo "NDK symlink already exists or source not found"
+              ls "$HOME/.buildozer/android/platform/" || true
+          fi
 
       - name: Install buildozer
         run: pip install buildozer cython
 
       - name: Build APK
-        # ANDROIDNDK points to the pre-installed NDK r25b on the GitHub runner,
-        # so buildozer skips the 1 GB+ NDK download. SDK/build-tools are still
-        # fetched by buildozer's own flow (cached after the first run).
-        # `yes |` is a belt-and-suspenders guard against any remaining prompts.
         run: yes | buildozer android debug
         env:
           JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
-          ANDROIDNDK: /usr/local/lib/android/sdk/ndk/25.1.8937393
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
