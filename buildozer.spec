@@ -11,7 +11,7 @@ source.include_exts = py,kv,csv,png,jpg,jpeg
 version = 1.0.0
 
 # Dependencies — use 'opencv' (not opencv-python) for the Kivy/buildozer recipe
-requirements = python3,kivy==2.3.0,numpy,pandas,opencv,scikit-learn,scikit-image,plyer,pillow
+requirements = python3,kivy==2.3.0,numpy==1.26.4,pandas,opencv,scikit-learn,scikit-image,plyer,pillow
 
 orientation = portrait
 fullscreen = 0
