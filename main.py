@@ -150,7 +150,8 @@ class ColorBlockScreen(BoxLayout):
         for harmony_fn in HARMONY_FUNCTIONS:
             for candidate in harmony_fn(self._clr1):
                 if is_hue_match(self._clr2, candidate):
-                    self.match_text = "IT'S A MATCH! :D"
+                    theory = harmony_fn.__name__.replace("_", "-").title()
+                    self.match_text = f"IT'S A MATCH! :D\n{theory}"
                     return
         self.match_text = "NOT A MATCH :("
 
