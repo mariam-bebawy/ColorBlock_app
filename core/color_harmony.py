@@ -16,7 +16,7 @@ def split_complementary(val):
     return [c150, c210]
 
 
-def analogous(val, d=100):
+def analogous(val, d=30):
     step = d / 360.0
     r, g, b = map(lambda x: x / 255.0, val)
     h, l, s = colorsys.rgb_to_hls(r, g, b)
@@ -56,9 +56,9 @@ def create_range(clr, margin=10):
 
 
 def check_color_range(clr, r_range, g_range, b_range):
-    """Returns True if clr falls within any of the given RGB ranges."""
+    """Returns True if clr falls within all of the given RGB ranges."""
     return (
-        int(clr[0]) in r_range or
-        int(clr[1]) in g_range or
+        int(clr[0]) in r_range and
+        int(clr[1]) in g_range and
         int(clr[2]) in b_range
     )
