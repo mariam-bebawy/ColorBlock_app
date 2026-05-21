@@ -1,0 +1,9 @@
+# kivy[full] has build issues on Python 3.14 (ffpyplayer); install base kivy instead
+kivy==2.3.1
+plyer
+numpy
+pandas
+opencv-python-headless  # headless avoids SDL2 conflict with pygame/kivy on macOS
+scikit-learn
+scikit-image
+Pillow
