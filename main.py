@@ -19,7 +19,7 @@ from kivy.clock import Clock
 from kivy.utils import platform
 
 from core.color_engine import (
-    check_brightness, get_roi, get_dominant_color,
+    check_brightness, segment_clothing, get_dominant_color,
     rgb_to_hex, load_colors_csv,
 )
 from core.color_harmony import HARMONY_FUNCTIONS, create_range, check_color_range
@@ -117,8 +117,8 @@ class ColorBlockScreen(BoxLayout):
             Clock.schedule_once(lambda dt: self._show_brightness_warning())
             return
 
-        _, roi = get_roi(img_bgr)
-        dominant = get_dominant_color(roi, n_clusters=3)
+        pixels = segment_clothing(img_bgr)
+        dominant = get_dominant_color(pixels, n_clusters=3)
         hex_str = rgb_to_hex(dominant)
         rgb_ints = [int(dominant[0]), int(dominant[1]), int(dominant[2])]
         rgba_kivy = [dominant[0] / 255, dominant[1] / 255, dominant[2] / 255, 1]

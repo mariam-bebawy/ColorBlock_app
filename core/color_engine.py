@@ -37,6 +37,32 @@ def _kmeans_numpy(pixels, n_clusters=3, max_iter=20, seed=42):
     return labels, centers
 
 
+def segment_clothing(img_bgr, resize=500):
+    """GrabCut foreground segmentation — returns (N, 3) float32 RGB pixels of the clothing item."""
+    img = cv2.resize(img_bgr, (resize, resize))
+    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+    mask = np.zeros(img_rgb.shape[:2], np.uint8)
+    bgd_model = np.zeros((1, 65), np.float64)
+    fgd_model = np.zeros((1, 65), np.float64)
+    margin = resize // 10
+    rect = (margin, margin, resize - 2 * margin, resize - 2 * margin)
+
+    try:
+        cv2.grabCut(img_rgb, mask, rect, bgd_model, fgd_model, 5, cv2.GC_INIT_WITH_RECT)
+        fg_mask = (mask == cv2.GC_FGD) | (mask == cv2.GC_PR_FGD)
+        pixels = img_rgb[fg_mask].reshape(-1, 3)
+    except Exception:
+        pixels = np.empty((0, 3), dtype=np.uint8)
+
+    if len(pixels) < 500:
+        m = 100
+        h, w = img_rgb.shape[:2]
+        pixels = img_rgb[h // 2 - m:h // 2 + m, w // 2 - m:w // 2 + m].reshape(-1, 3)
+
+    return pixels.astype(np.float32)
+
+
 def get_dominant_color(roi, n_clusters=3):
     pixels = roi.reshape(-1, 3).astype(np.float32)
     labels, centers = _kmeans_numpy(pixels, n_clusters=n_clusters)
