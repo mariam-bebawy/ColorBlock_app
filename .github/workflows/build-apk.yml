@@ -31,6 +31,9 @@ jobs:
             cmake libffi-dev libssl-dev \
             build-essential ccache
 
+      - name: Set JAVA_HOME to JDK 17
+        run: echo "JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64" >> $GITHUB_ENV
+
       - name: Set up Android SDK (cmdline-tools + licenses)
         uses: android-actions/setup-android@v3
 
